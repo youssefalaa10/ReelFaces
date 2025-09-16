@@ -22,8 +22,9 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           title: 'Reel Faces',
           debugShowCheckedModeBanner: false,
-          theme: AppTheme.lightTheme,
+          theme: AppTheme.darkTheme, // Dark theme as default
           darkTheme: AppTheme.darkTheme,
+          themeMode: ThemeMode.dark, // Force dark mode
           onGenerateRoute: AppRouter.generateRoute,
           initialRoute: Routes.homeScreen,
         );

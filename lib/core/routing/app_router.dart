@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../features/home/ui/home_screen.dart';
 import '../../features/image_viewer/ui/image_viewer_screen.dart';
 import '../../features/person_details/ui/person_details_screen.dart';
+import '../utils/colors_manager.dart';
 import 'routes.dart';
 
 class AppRouter {
@@ -61,7 +62,7 @@ class AppRouter {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error, size: 64, color: Colors.red),
+              const Icon(Icons.error, size: 64, color: AppColors.red),
               const SizedBox(height: 16),
               Text(
                 'Navigation Error',
