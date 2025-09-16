@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../models/image_model.dart';
+import '../../features/image_viewer/data/model/image_model.dart';
 import '../utils/colors_manager.dart';
 import '../utils/styles/app_text_style.dart';
 

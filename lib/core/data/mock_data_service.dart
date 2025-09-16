@@ -1,5 +1,5 @@
-import '../models/image_model.dart';
-import '../models/person_model.dart';
+import '../../features/image_viewer/data/model/image_model.dart';
+import '../../features/person_details/data/model/person_model.dart';
 
 class MockDataService {
   static const List<PersonModel> mockPeople = [
