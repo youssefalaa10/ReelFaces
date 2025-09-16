@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+
+import 'core/routing/app_router.dart';
+import 'core/routing/routes.dart';
 import 'core/utils/themes/app_theme.dart';
-import 'features/home/ui/home_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -22,10 +24,10 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
-          home: child,
+          onGenerateRoute: AppRouter.generateRoute,
+          initialRoute: Routes.homeScreen,
         );
       },
-      child: const HomeScreen(),
     );
   }
 }
