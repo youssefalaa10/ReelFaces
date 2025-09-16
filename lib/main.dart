@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import 'core/db/hive_service.dart';
 import 'core/dependency_injection/dependency.dart';
 import 'core/routing/app_router.dart';
 import 'core/routing/routes.dart';
@@ -8,6 +9,9 @@ import 'core/utils/themes/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Hive
+  await HiveService().initialize();
 
   // Initialize dependencies
   await setUpDependencies();
