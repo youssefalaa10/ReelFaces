@@ -44,21 +44,33 @@ class PersonImagesCubit extends Cubit<PersonImagesState> {
       );
     } on CacheException catch (e) {
       _logger.e('Cache error loading person images: ${e.message}');
-      emit(
-        PersonImagesError(
-          message:
-              'No images available. Please check your internet connection.',
-          cachedImages: _currentImages.isNotEmpty ? _currentImages : null,
-        ),
-      );
+
+      // If we have cached images, show them with a warning
+      if (_currentImages.isNotEmpty) {
+        emit(PersonImagesLoaded(images: _currentImages));
+        _logger.w('Showing cached person images due to cache error');
+      } else {
+        emit(
+          const PersonImagesError(
+            message:
+                'No images available. Please check your internet connection.',
+          ),
+        );
+      }
     } catch (e) {
       _logger.e('Error loading person images: $e');
-      emit(
-        PersonImagesError(
-          message: 'Failed to load images. Please try again.',
-          cachedImages: _currentImages.isNotEmpty ? _currentImages : null,
-        ),
-      );
+
+      // If we have cached images, show them with a warning
+      if (_currentImages.isNotEmpty) {
+        emit(PersonImagesLoaded(images: _currentImages));
+        _logger.w('Showing cached person images due to error');
+      } else {
+        emit(
+          const PersonImagesError(
+            message: 'Failed to load images. Please try again.',
+          ),
+        );
+      }
     }
   }
 

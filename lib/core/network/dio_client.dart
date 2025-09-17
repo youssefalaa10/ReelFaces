@@ -49,7 +49,7 @@ class DioClient {
   }
 
   void _addInterceptors(Dio dio) {
-    // API Key Interceptor (should be first)
+    // API Key Interceptor 
     dio.interceptors.add(
       ApiKeyInterceptor(
         apiKey: apiKey,

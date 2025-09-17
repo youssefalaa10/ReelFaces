@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../domain/entities/profile_image.dart';
+import '../network/network_config.dart';
 import '../utils/colors_manager.dart';
 import '../utils/styles/app_text_style.dart';
 
@@ -50,7 +51,7 @@ class ImageTile extends StatelessWidget {
                   height: double.infinity,
                   color: AppColors.surfaceVariant,
                   child: Image.network(
-                    image.filePath,
+                    NetworkConfig.getProfileImageUrl(image.filePath),
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return _buildPlaceholder();

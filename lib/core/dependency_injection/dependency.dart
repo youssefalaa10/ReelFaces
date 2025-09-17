@@ -8,7 +8,6 @@ import '../../features/person_details/logic/person_images_cubit.dart';
 import '../config/env_config.dart';
 import '../data/repositories/people_repository_impl.dart';
 import '../db/db.dart';
-import '../db/hive_service.dart';
 import '../domain/repositories/people_repository.dart';
 import '../network/network_service.dart';
 

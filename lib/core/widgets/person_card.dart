@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../domain/entities/person.dart';
+import '../network/network_config.dart';
 import '../utils/colors_manager.dart';
 import '../utils/styles/app_text_style.dart';
 
@@ -45,7 +46,7 @@ class PersonCard extends StatelessWidget {
                   ),
                   child: person.profilePath != null
                       ? Image.network(
-                          person.profilePath!,
+                          NetworkConfig.getProfileImageUrl(person.profilePath!),
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
                             return _buildPlaceholder();

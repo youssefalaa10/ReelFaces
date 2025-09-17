@@ -41,8 +41,8 @@ class PeopleRepositoryImpl implements PeopleRepository {
 
         final paginatedPeople = _parsePaginatedPeople(data);
 
-        // Cache the result
-        await _cacheService.save('popular_people_page_$page', paginatedPeople);
+        // Cache the result as JSON list with pagination metadata
+        await _cachePopularPeoplePage(page, paginatedPeople);
 
         _logger.i(
           'Popular people fetched from network - page: $page, count: ${paginatedPeople.results.length}',
@@ -131,12 +131,8 @@ class PeopleRepositoryImpl implements PeopleRepository {
         final data = response.data as Map<String, dynamic>;
         final images = _parseProfileImages(data);
 
-        // Cache the result
-        await _cacheService.save(
-          'person_images_$id',
-          images,
-          ttlMinutes: 180, // Cache for 3 hours
-        );
+        // Cache the result as JSON list
+        await _cachePersonImages(id, images);
 
         _logger.i(
           'Person images fetched from network - id: $id, count: ${images.length}',
@@ -164,23 +160,82 @@ class PeopleRepositoryImpl implements PeopleRepository {
     }
   }
 
+  // Cache helper methods
+  Future<void> _cachePopularPeoplePage(
+    int page,
+    Paginated<Person> paginatedPeople,
+  ) async {
+    try {
+      // Convert people to JSON list
+      final peopleJsonList = paginatedPeople.results
+          .map((person) => JsonHelpers.personToJson(person))
+          .toList();
+
+      // Store people list
+      await _cacheService.save('popular_people_page_$page', peopleJsonList);
+
+      // Store pagination metadata separately
+      final metadata = {
+        'page': paginatedPeople.page,
+        'totalPages': paginatedPeople.totalPages,
+        'totalResults': paginatedPeople.totalResults,
+      };
+      await _cacheService.save('popular_people_metadata_$page', metadata);
+
+      _logger.d(
+        'Cached popular people page $page with ${peopleJsonList.length} people',
+      );
+    } catch (e) {
+      _logger.e('Error caching popular people page $page: $e');
+      // Don't throw here, just log the error
+    }
+  }
+
   // Cache fallback methods
   Future<Paginated<Person>> _getCachedPopularPeople(int page) async {
-    final cached = await _cacheService.get<Paginated<Person>>(
-      'popular_people_page_$page',
-      (json) => JsonHelpers.paginatedFromJson(json, JsonHelpers.personFromJson),
-    );
+    try {
+      // Get cached people list
+      final cachedPeopleList = await _cacheService
+          .getList<Map<String, dynamic>>(
+            'popular_people_page_$page',
+            (json) => json,
+          );
 
-    if (cached != null) {
-      _logger.i(
-        'Popular people retrieved from cache - page: $page, count: ${cached.results.length}',
+      // Get cached pagination metadata
+      final cachedMetadata = await _cacheService.get<Map<String, dynamic>>(
+        'popular_people_metadata_$page',
+        (json) => json,
       );
-      return cached;
-    }
 
-    throw CacheException(
-      message: 'No cached data available for popular people page $page',
-    );
+      if (cachedPeopleList != null && cachedMetadata != null) {
+        // Convert JSON list back to Person objects
+        final people = cachedPeopleList
+            .map((json) => JsonHelpers.personFromJson(json))
+            .toList();
+
+        // Reconstruct Paginated object
+        final paginatedPeople = Paginated<Person>(
+          page: cachedMetadata['page'] as int,
+          results: people,
+          totalPages: cachedMetadata['totalPages'] as int,
+          totalResults: cachedMetadata['totalResults'] as int,
+        );
+
+        _logger.i(
+          'Popular people retrieved from cache - page: $page, count: ${people.length}',
+        );
+        return paginatedPeople;
+      }
+
+      throw CacheException(
+        message: 'No cached data available for popular people page $page',
+      );
+    } catch (e) {
+      _logger.e('Error retrieving cached popular people: $e');
+      throw CacheException(
+        message: 'No cached data available for popular people page $page',
+      );
+    }
   }
 
   Future<PersonDetails> _getCachedPersonDetails(int id) async {
@@ -201,22 +256,55 @@ class PeopleRepositoryImpl implements PeopleRepository {
     );
   }
 
-  Future<List<ProfileImage>> _getCachedPersonImages(int id) async {
-    final cached = await _cacheService.getList<ProfileImage>(
-      'person_images_$id',
-      JsonHelpers.profileImageFromJson,
-    );
+  Future<void> _cachePersonImages(int id, List<ProfileImage> images) async {
+    try {
+      // Convert images to JSON list
+      final imagesJsonList = images
+          .map((image) => JsonHelpers.profileImageToJson(image))
+          .toList();
 
-    if (cached != null) {
-      _logger.i(
-        'Person images retrieved from cache - id: $id, count: ${cached.length}',
+      // Store images list
+      await _cacheService.save(
+        'person_images_$id',
+        imagesJsonList,
+        ttlMinutes: 180, // Cache for 3 hours
       );
-      return cached;
-    }
 
-    throw CacheException(
-      message: 'No cached data available for person images $id',
-    );
+      _logger.d(
+        'Person images cached for $id with ${imagesJsonList.length} images',
+      );
+    } catch (e) {
+      _logger.e('Failed to cache person images for $id: $e');
+    }
+  }
+
+  Future<List<ProfileImage>> _getCachedPersonImages(int id) async {
+    try {
+      // Get cached images list as JSON
+      final cachedImagesList = await _cacheService
+          .getList<Map<String, dynamic>>('person_images_$id', (json) => json);
+
+      if (cachedImagesList != null) {
+        // Convert JSON list back to ProfileImage objects
+        final images = cachedImagesList
+            .map((json) => JsonHelpers.profileImageFromJson(json))
+            .toList();
+
+        _logger.i(
+          'Person images retrieved from cache - id: $id, count: ${images.length}',
+        );
+        return images;
+      }
+
+      throw CacheException(
+        message: 'No cached data available for person images $id',
+      );
+    } catch (e) {
+      _logger.e('Error retrieving cached person images: $e');
+      throw CacheException(
+        message: 'No cached data available for person images $id',
+      );
+    }
   }
 
   // Parsing methods
@@ -305,10 +393,15 @@ class PeopleRepositoryImpl implements PeopleRepository {
   }
 
   ProfileImage _parseProfileImage(Map<String, dynamic> data) {
+    final filePath = data['file_path'] as String;
+    // Construct full URL for TMDB images
+    final fullImageUrl =
+        '${NetworkConstants.imageBaseUrl}${NetworkConstants.profileSizeLarge}$filePath';
+
     return ProfileImage(
       aspectRatio: (data['aspect_ratio'] as num).toDouble(),
       height: data['height'] as int,
-      filePath: data['file_path'] as String,
+      filePath: fullImageUrl,
       voteAverage: (data['vote_average'] as num).toDouble(),
       voteCount: data['vote_count'] as int,
       width: data['width'] as int,

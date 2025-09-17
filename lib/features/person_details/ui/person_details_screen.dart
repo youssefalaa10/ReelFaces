@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/dependency_injection/dependency.dart';
 import '../../../core/domain/entities/person_details.dart';
 import '../../../core/domain/entities/profile_image.dart';
+import '../../../core/network/network_config.dart';
 import '../../../core/routing/routes.dart';
 import '../../../core/utils/app_string.dart';
 import '../../../core/utils/colors_manager.dart';
@@ -180,11 +181,18 @@ class _PersonDetailsScreenView extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12.r),
                       child: person.profilePath != null
                           ? Image.network(
-                              person.profilePath!,
+                              NetworkConfig.getProfileImageUrl(
+                                person.profilePath!,
+                              ),
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) {
                                 return _buildPlaceholder();
                               },
+                              loadingBuilder:
+                                  (context, child, loadingProgress) {
+                                    if (loadingProgress == null) return child;
+                                    return _buildShimmer();
+                                  },
                             )
                           : _buildPlaceholder(),
                     ),
@@ -471,11 +479,33 @@ class _PersonDetailsScreenView extends StatelessWidget {
     );
   }
 
+  Widget _buildShimmer() {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.shimmerBase,
+            AppColors.shimmerHighlight,
+            AppColors.shimmerBase,
+          ],
+          stops: [0.0, 0.5, 1.0],
+        ),
+      ),
+    );
+  }
+
   void _navigateToImageViewer(BuildContext context, ProfileImage image) {
     Navigator.pushNamed(
       context,
       Routes.imageViewerScreen,
-      arguments: {'imageUrl': image.filePath, 'imageTitle': 'Profile Image'},
+      arguments: {
+        'imageUrl': NetworkConfig.getProfileImageUrl(image.filePath),
+        'imageTitle': 'Profile Image',
+      },
     );
   }
 }
