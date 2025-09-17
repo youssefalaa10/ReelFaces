@@ -53,7 +53,6 @@ class NetworkService {
     return _dioClient!;
   }
 
-  // Convenience getter for direct Dio access
   Dio get dio => dioClient.dio;
 
   // Method to update API key

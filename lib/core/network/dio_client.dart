@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
 
+import 'debug_interceptor.dart';
 import 'error_handler.dart';
 import 'interceptors/api_key_interceptor.dart';
 import 'interceptors/logging_interceptor.dart';
@@ -49,7 +50,10 @@ class DioClient {
   }
 
   void _addInterceptors(Dio dio) {
-    // API Key Interceptor 
+    // Debug Interceptor (should be first for debugging)
+    dio.interceptors.add(DebugInterceptor(logger: logger));
+
+    // API Key Interceptor (should be second)
     dio.interceptors.add(
       ApiKeyInterceptor(
         apiKey: apiKey,

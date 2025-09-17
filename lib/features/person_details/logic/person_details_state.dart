@@ -17,11 +17,15 @@ class PersonDetailsLoading extends PersonDetailsState {
 }
 
 class PersonDetailsLoaded extends PersonDetailsState {
-  const PersonDetailsLoaded({required this.personDetails});
+  const PersonDetailsLoaded({
+    required this.personDetails,
+    this.isFromCache = false,
+  });
   final PersonDetails personDetails;
+  final bool isFromCache;
 
   @override
-  List<Object?> get props => [personDetails];
+  List<Object?> get props => [personDetails, isFromCache];
 }
 
 class PersonDetailsError extends PersonDetailsState {

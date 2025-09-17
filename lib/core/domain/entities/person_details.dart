@@ -1,4 +1,21 @@
 class PersonDetails {
+  /// Create PersonDetails from JSON
+  factory PersonDetails.fromJson(Map<String, dynamic> json) {
+    return PersonDetails(
+      id: json['id'] as int,
+      name: json['name'] as String,
+      adult: json['adult'] as bool? ?? false,
+      alsoKnownAs: (json['alsoKnownAs'] as List?)?.cast<String>() ?? [],
+      biography: json['biography'] as String?,
+      birthday: json['birthday'] as String?,
+      deathday: json['deathday'] as String?,
+      placeOfBirth: json['placeOfBirth'] as String?,
+      profilePath: json['profilePath'] as String?,
+      popularity: (json['popularity'] as num?)?.toDouble(),
+      knownForDepartment: json['knownForDepartment'] as String?,
+      homepage: json['homepage'] as String?,
+    );
+  }
   const PersonDetails({
     required this.id,
     required this.name,
@@ -63,5 +80,23 @@ class PersonDetails {
   @override
   String toString() {
     return 'PersonDetails(id: $id, name: $name, biography: $biography, birthday: $birthday, deathday: $deathday, placeOfBirth: $placeOfBirth, profilePath: $profilePath, popularity: $popularity, adult: $adult, knownForDepartment: $knownForDepartment, homepage: $homepage, alsoKnownAs: $alsoKnownAs)';
+  }
+
+  /// Convert PersonDetails to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'adult': adult,
+      'alsoKnownAs': alsoKnownAs,
+      'biography': biography,
+      'birthday': birthday,
+      'deathday': deathday,
+      'placeOfBirth': placeOfBirth,
+      'profilePath': profilePath,
+      'popularity': popularity,
+      'knownForDepartment': knownForDepartment,
+      'homepage': homepage,
+    };
   }
 }

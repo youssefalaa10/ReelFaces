@@ -80,16 +80,22 @@ class PeopleRepositoryImpl implements PeopleRepository {
         '${NetworkConstants.personEndpoint}/$id',
       );
 
+      _logger.d('Person details response status: ${response.statusCode}');
+      _logger.d('Person details response headers: ${response.headers}');
+
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
+
+        if (data.isEmpty) {
+          throw const ServerException(
+            message: 'Empty response received for person details',
+          );
+        }
+
         final personDetails = _parsePersonDetails(data);
 
-        // Cache the result
-        await _cacheService.save(
-          'person_details_$id',
-          personDetails,
-          ttlMinutes: 120, // Cache for 2 hours
-        );
+        // Cache the result as JSON
+        await _cachePersonDetails(id, personDetails);
 
         _logger.i(
           'Person details fetched from network - id: $id, name: ${personDetails.name}',
@@ -97,13 +103,17 @@ class PeopleRepositoryImpl implements PeopleRepository {
         return personDetails;
       } else {
         throw ServerException(
-          message: 'Failed to fetch person details: ${response.statusCode}',
+          message:
+              'Failed to fetch person details: ${response.statusCode} - ${response.statusMessage}',
         );
       }
     } on DioException catch (e) {
-      _logger.w(
-        'Network error fetching person details, trying cache - id: $id, error: ${e.message}',
+      _logger.e(
+        'Network error fetching person details - id: $id, error: ${e.message}',
       );
+      _logger.e('DioException type: ${e.type}');
+      _logger.e('DioException response: ${e.response?.data}');
+      _logger.e('DioException status code: ${e.response?.statusCode}');
 
       // Fallback to cache
       return await _getCachedPersonDetails(id);
@@ -238,22 +248,51 @@ class PeopleRepositoryImpl implements PeopleRepository {
     }
   }
 
-  Future<PersonDetails> _getCachedPersonDetails(int id) async {
-    final cached = await _cacheService.get<PersonDetails>(
-      'person_details_$id',
-      JsonHelpers.personDetailsFromJson,
-    );
+  Future<void> _cachePersonDetails(int id, PersonDetails personDetails) async {
+    try {
+      // Convert PersonDetails to JSON using built-in method
+      final personDetailsJson = personDetails.toJson();
 
-    if (cached != null) {
-      _logger.i(
-        'Person details retrieved from cache - id: $id, name: ${cached.name}',
+      // Store as JSON
+      await _cacheService.save(
+        'person_details_$id',
+        personDetailsJson,
+        ttlMinutes: 120, // Cache for 2 hours
       );
-      return cached;
-    }
 
-    throw CacheException(
-      message: 'No cached data available for person details $id',
-    );
+      _logger.d('Person details cached for $id: ${personDetails.name}');
+    } catch (e) {
+      _logger.e('Failed to cache person details for $id: $e');
+    }
+  }
+
+  Future<PersonDetails> _getCachedPersonDetails(int id) async {
+    try {
+      // Get cached JSON data
+      final cachedJson = await _cacheService.get<Map<String, dynamic>>(
+        'person_details_$id',
+        (json) => json,
+      );
+
+      if (cachedJson != null) {
+        // Convert JSON back to PersonDetails using built-in method
+        final personDetails = PersonDetails.fromJson(cachedJson);
+
+        _logger.i(
+          'Person details retrieved from cache - id: $id, name: ${personDetails.name}',
+        );
+        return personDetails;
+      }
+
+      throw CacheException(
+        message: 'No cached data available for person details $id',
+      );
+    } catch (e) {
+      _logger.e('Error retrieving cached person details: $e');
+      throw CacheException(
+        message: 'No cached data available for person details $id',
+      );
+    }
   }
 
   Future<void> _cachePersonImages(int id, List<ProfileImage> images) async {
@@ -369,20 +408,45 @@ class PeopleRepositoryImpl implements PeopleRepository {
   }
 
   PersonDetails _parsePersonDetails(Map<String, dynamic> data) {
-    return PersonDetails(
-      id: data['id'] as int,
-      name: data['name'] as String,
-      adult: data['adult'] as bool? ?? false,
-      alsoKnownAs: (data['also_known_as'] as List?)?.cast<String>() ?? [],
-      biography: data['biography'] as String?,
-      birthday: data['birthday'] as String?,
-      deathday: data['deathday'] as String?,
-      placeOfBirth: data['place_of_birth'] as String?,
-      profilePath: data['profile_path'] as String?,
-      popularity: (data['popularity'] as num?)?.toDouble(),
-      knownForDepartment: data['known_for_department'] as String?,
-      homepage: data['homepage'] as String?,
-    );
+    try {
+      _logger.d('Parsing person details data...');
+      _logger.d('Data keys: ${data.keys.toList()}');
+
+      // Safely parse also_known_as list
+      List<String> alsoKnownAs = [];
+      if (data['also_known_as'] != null && data['also_known_as'] is List) {
+        final alsoKnownAsList = data['also_known_as'] as List;
+        alsoKnownAs = alsoKnownAsList
+            .where((item) => item != null && item is String)
+            .cast<String>()
+            .toList();
+      }
+
+      final personDetails = PersonDetails(
+        id: data['id'] as int? ?? 0,
+        name: data['name'] as String? ?? 'Unknown',
+        adult: data['adult'] as bool? ?? false,
+        alsoKnownAs: alsoKnownAs,
+        biography: data['biography'] as String?,
+        birthday: data['birthday'] as String?,
+        deathday: data['deathday'] as String?,
+        placeOfBirth: data['place_of_birth'] as String?,
+        profilePath: data['profile_path'] as String?,
+        popularity: (data['popularity'] as num?)?.toDouble(),
+        knownForDepartment: data['known_for_department'] as String?,
+        homepage: data['homepage'] as String?,
+      );
+
+      _logger.d(
+        'Successfully parsed person details: ${personDetails.name} (ID: ${personDetails.id})',
+      );
+      return personDetails;
+    } catch (e, stackTrace) {
+      _logger.e('Error parsing person details: $e');
+      _logger.e('Data: $data');
+      _logger.e('Stack trace: $stackTrace');
+      rethrow;
+    }
   }
 
   List<ProfileImage> _parseProfileImages(Map<String, dynamic> data) {

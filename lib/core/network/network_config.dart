@@ -34,12 +34,10 @@ class NetworkConfig {
 
   // Environment-specific configuration
   static void configureForDevelopment() {
-    // Add development-specific configuration here
     setLanguage('en-US');
   }
 
   static void configureForProduction() {
-    // Add production-specific configuration here
     setLanguage('en-US');
   }
 

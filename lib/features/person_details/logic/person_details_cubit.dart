@@ -29,6 +29,7 @@ class PersonDetailsCubit extends Cubit<PersonDetailsState> {
     }
 
     try {
+      _logger.d('Loading person details for ID: $personId');
       final personDetails = await _peopleRepository.getPersonDetails(personId);
       _currentPersonDetails = personDetails;
 
@@ -39,20 +40,66 @@ class PersonDetailsCubit extends Cubit<PersonDetailsState> {
       );
     } on CacheException catch (e) {
       _logger.e('Cache error loading person details: ${e.message}');
-      emit(
-        PersonDetailsError(
-          message: 'No data available. Please check your internet connection.',
-          cachedPersonDetails: _currentPersonDetails,
-        ),
-      );
-    } catch (e) {
-      _logger.e('Error loading person details: $e');
-      emit(
-        PersonDetailsError(
-          message: 'Failed to load person details. Please try again.',
-          cachedPersonDetails: _currentPersonDetails,
-        ),
-      );
+
+      // If we have cached data, show it with a warning
+      if (_currentPersonDetails != null) {
+        emit(
+          PersonDetailsLoaded(
+            personDetails: _currentPersonDetails!,
+            isFromCache: true,
+          ),
+        );
+        _logger.w('Showing cached person details due to cache error');
+      } else {
+        emit(
+          PersonDetailsError(
+            message:
+                'No data available. Please check your internet connection.',
+            cachedPersonDetails: _currentPersonDetails,
+          ),
+        );
+      }
+    } on ServerException catch (e) {
+      _logger.e('Server error loading person details: ${e.message}');
+
+      // If we have cached data, show it with a warning
+      if (_currentPersonDetails != null) {
+        emit(
+          PersonDetailsLoaded(
+            personDetails: _currentPersonDetails!,
+            isFromCache: true,
+          ),
+        );
+        _logger.w('Showing cached person details due to server error');
+      } else {
+        emit(
+          PersonDetailsError(
+            message: 'Server error: ${e.message}',
+            cachedPersonDetails: _currentPersonDetails,
+          ),
+        );
+      }
+    } catch (e, stackTrace) {
+      _logger.e('Unexpected error loading person details: $e');
+      _logger.e('Stack trace: $stackTrace');
+
+      // If we have cached data, show it with a warning
+      if (_currentPersonDetails != null) {
+        emit(
+          PersonDetailsLoaded(
+            personDetails: _currentPersonDetails!,
+            isFromCache: true,
+          ),
+        );
+        _logger.w('Showing cached person details due to unexpected error');
+      } else {
+        emit(
+          PersonDetailsError(
+            message: 'Failed to load person details. Please try again.',
+            cachedPersonDetails: _currentPersonDetails,
+          ),
+        );
+      }
     }
   }
 
