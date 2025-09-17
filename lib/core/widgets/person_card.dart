@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../features/person_details/data/model/person_model.dart';
+import '../domain/entities/person.dart';
 import '../utils/colors_manager.dart';
 import '../utils/styles/app_text_style.dart';
 
 class PersonCard extends StatelessWidget {
   const PersonCard({required this.person, super.key, this.onTap, this.heroTag});
-  final PersonModel person;
+  final Person person;
   final VoidCallback? onTap;
   final String? heroTag;
 
@@ -80,11 +80,11 @@ class PersonCard extends StatelessWidget {
 
                     SizedBox(height: 4.h),
 
-                    // Known For
+                    // Known For (showing count of movies)
                     if (person.knownFor.isNotEmpty)
                       Flexible(
                         child: Text(
-                          person.knownFor.first,
+                          '${person.knownFor.length} movies',
                           style: AppTextStyle.bodySmall.copyWith(
                             color: AppColors.onSurfaceVariant,
                           ),
@@ -106,7 +106,7 @@ class PersonCard extends StatelessWidget {
                         SizedBox(width: 4.w),
                         Flexible(
                           child: Text(
-                            person.popularity.toStringAsFixed(1),
+                            person.popularity?.toStringAsFixed(1) ?? 'N/A',
                             style: AppTextStyle.bodySmall.copyWith(
                               color: AppColors.tmdbGreen,
                               fontWeight: FontWeight.w600,

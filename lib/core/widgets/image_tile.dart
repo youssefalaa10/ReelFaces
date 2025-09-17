@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../features/image_viewer/data/model/image_model.dart';
+import '../domain/entities/profile_image.dart';
 import '../utils/colors_manager.dart';
 import '../utils/styles/app_text_style.dart';
 
@@ -14,7 +14,7 @@ class ImageTile extends StatelessWidget {
     this.width,
     this.height,
   });
-  final ImageModel image;
+  final ProfileImage image;
   final VoidCallback? onTap;
   final String? heroTag;
   final double? width;
@@ -41,7 +41,7 @@ class ImageTile extends StatelessWidget {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12.r),
           child: Hero(
-            tag: heroTag ?? 'image_${image.id}',
+            tag: heroTag ?? 'image_${image.filePath}',
             child: Stack(
               children: [
                 // Image
@@ -50,7 +50,7 @@ class ImageTile extends StatelessWidget {
                   height: double.infinity,
                   color: AppColors.surfaceVariant,
                   child: Image.network(
-                    image.url,
+                    image.filePath,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return _buildPlaceholder();
@@ -80,23 +80,21 @@ class ImageTile extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (image.title != null)
-                          Text(
-                            image.title!,
-                            style: AppTextStyle.bodySmall.copyWith(
-                              color: AppColors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        Text(
+                          'Profile Image',
+                          style: AppTextStyle.bodySmall.copyWith(
+                            color: AppColors.white,
+                            fontWeight: FontWeight.w600,
                           ),
-                        if (image.aspectRatio != null)
-                          Text(
-                            image.aspectRatio!,
-                            style: AppTextStyle.caption.copyWith(
-                              color: AppColors.white70,
-                            ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          '${image.aspectRatio.toStringAsFixed(1)}:1',
+                          style: AppTextStyle.caption.copyWith(
+                            color: AppColors.white70,
                           ),
+                        ),
                       ],
                     ),
                   ),

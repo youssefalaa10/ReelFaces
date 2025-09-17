@@ -36,6 +36,9 @@ class PeopleRepositoryImpl implements PeopleRepository {
 
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
+        _logger.d('API Response data keys: ${data.keys.toList()}');
+        _logger.d('Results count: ${data['results']?.length ?? 0}');
+
         final paginatedPeople = _parsePaginatedPeople(data);
 
         // Cache the result
@@ -218,25 +221,63 @@ class PeopleRepositoryImpl implements PeopleRepository {
 
   // Parsing methods
   Paginated<Person> _parsePaginatedPeople(Map<String, dynamic> data) {
-    return Paginated<Person>(
-      page: data['page'] as int,
-      results: (data['results'] as List)
-          .map((item) => _parsePerson(item as Map<String, dynamic>))
-          .toList(),
-      totalPages: data['total_pages'] as int,
-      totalResults: data['total_results'] as int,
-    );
+    try {
+      _logger.d('Parsing paginated people data...');
+      _logger.d(
+        'Page: ${data['page']}, Total pages: ${data['total_pages']}, Total results: ${data['total_results']}',
+      );
+
+      final results = (data['results'] as List).map((item) {
+        _logger.d('Parsing person: ${item['name']} (ID: ${item['id']})');
+        return _parsePerson(item as Map<String, dynamic>);
+      }).toList();
+
+      _logger.d('Successfully parsed ${results.length} people');
+
+      return Paginated<Person>(
+        page: data['page'] as int,
+        results: results,
+        totalPages: data['total_pages'] as int,
+        totalResults: data['total_results'] as int,
+      );
+    } catch (e, stackTrace) {
+      _logger.e('Error parsing paginated people: $e');
+      _logger.e('Stack trace: $stackTrace');
+      rethrow;
+    }
   }
 
   Person _parsePerson(Map<String, dynamic> data) {
-    return Person(
-      id: data['id'] as int,
-      name: data['name'] as String,
-      adult: data['adult'] as bool? ?? false,
-      knownFor: (data['known_for'] as List?)?.cast<int>() ?? [],
-      profilePath: data['profile_path'] as String?,
-      popularity: (data['popularity'] as num?)?.toDouble(),
-    );
+    try {
+      // Parse known_for as list of movie/TV show IDs
+      List<int> knownForIds = [];
+      if (data['known_for'] != null) {
+        final knownForList = data['known_for'] as List;
+        knownForIds = knownForList
+            .where((item) => item is Map<String, dynamic> && item['id'] != null)
+            .map((item) => item['id'] as int)
+            .toList();
+      }
+
+      final person = Person(
+        id: data['id'] as int,
+        name: data['name'] as String,
+        adult: data['adult'] as bool? ?? false,
+        knownFor: knownForIds,
+        profilePath: data['profile_path'] as String?,
+        popularity: (data['popularity'] as num?)?.toDouble(),
+      );
+
+      _logger.d(
+        'Parsed person: ${person.name} (ID: ${person.id}, Known for: ${person.knownFor.length} items)',
+      );
+      return person;
+    } catch (e, stackTrace) {
+      _logger.e('Error parsing person: $e');
+      _logger.e('Data: $data');
+      _logger.e('Stack trace: $stackTrace');
+      rethrow;
+    }
   }
 
   PersonDetails _parsePersonDetails(Map<String, dynamic> data) {
