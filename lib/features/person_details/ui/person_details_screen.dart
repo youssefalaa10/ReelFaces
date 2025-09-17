@@ -405,22 +405,40 @@ class _PersonDetailsScreenView extends StatelessWidget {
       );
     }
 
-    if (imagesState is PersonImagesLoaded && imagesState.images.isNotEmpty) {
-      return SliverToBoxAdapter(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w),
-          child: Text(
-            'Gallery',
-            style: AppTextStyle.titleLarge.copyWith(
-              color: AppColors.white,
-              fontWeight: FontWeight.w600,
+    if (imagesState is PersonImagesLoaded) {
+      if (imagesState.images.isEmpty) {
+        return SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.all(16.w),
+            child: Center(
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.image_not_supported,
+                    size: 60.sp,
+                    color: AppColors.white70,
+                  ),
+                  SizedBox(height: 16.h),
+                  Text(
+                    'No images available',
+                    style: AppTextStyle.bodyLarge.copyWith(
+                      color: AppColors.white70,
+                    ),
+                  ),
+                  SizedBox(height: 8.h),
+                  Text(
+                    'This person has no profile images',
+                    style: AppTextStyle.bodyMedium.copyWith(
+                      color: AppColors.white50,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      );
-    }
+        );
+      }
 
-    if (imagesState is PersonImagesLoaded) {
       return SliverPadding(
         padding: EdgeInsets.all(16.w),
         sliver: SliverGrid(

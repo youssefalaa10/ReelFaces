@@ -458,14 +458,13 @@ class PeopleRepositoryImpl implements PeopleRepository {
 
   ProfileImage _parseProfileImage(Map<String, dynamic> data) {
     final filePath = data['file_path'] as String;
-    // Construct full URL for TMDB images
-    final fullImageUrl =
-        '${NetworkConstants.imageBaseUrl}${NetworkConstants.profileSizeLarge}$filePath';
+    // Don't construct full URL here - let ImageTile handle it
+    // The filePath should be used with NetworkConfig.getProfileImageUrl()
 
     return ProfileImage(
       aspectRatio: (data['aspect_ratio'] as num).toDouble(),
       height: data['height'] as int,
-      filePath: fullImageUrl,
+      filePath: filePath, // Store just the file path
       voteAverage: (data['vote_average'] as num).toDouble(),
       voteCount: data['vote_count'] as int,
       width: data['width'] as int,
