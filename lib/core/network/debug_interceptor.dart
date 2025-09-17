@@ -34,7 +34,7 @@ class DebugInterceptor extends Interceptor {
   }
 
   @override
-  void onResponse(Response response, ResponseInterceptorHandler handler) {
+  void onResponse(Response<dynamic> response, ResponseInterceptorHandler handler) {
     _logger.d(' DEBUG RESPONSE:');
     _logger.d('  Status: ${response.statusCode}');
     _logger.d('  URL: ${response.requestOptions.uri}');

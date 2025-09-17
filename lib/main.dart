@@ -7,12 +7,13 @@ import 'core/dependency_injection/dependency.dart';
 import 'core/routing/app_router.dart';
 import 'core/routing/routes.dart';
 import 'core/utils/themes/app_theme.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Hive
   await HiveService().initialize();
-  await dotenv.load(fileName: ".env");
+  await dotenv.load();
   // Initialize dependencies
   await setUpDependencies();
 

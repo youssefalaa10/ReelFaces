@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../../../core/domain/entities/profile_image.dart';
+import '../../../../core/services/permission_service.dart';
 
 abstract class ImageSaveState extends Equatable {
   const ImageSaveState();
@@ -30,12 +31,17 @@ class ImageSaved extends ImageSaveState {
 }
 
 class ImageSaveError extends ImageSaveState {
-  const ImageSaveError({required this.message, required this.image});
+  const ImageSaveError({
+    required this.message,
+    required this.image,
+    this.permissionResult,
+  });
   final String message;
   final ProfileImage image;
+  final PermissionResult? permissionResult;
 
   @override
-  List<Object?> get props => [message, image];
+  List<Object?> get props => [message, image, permissionResult];
 }
 
 class ImageSaveProgress extends ImageSaveState {

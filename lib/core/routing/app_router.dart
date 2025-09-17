@@ -50,7 +50,7 @@ class AppRouter {
         );
 
       default:
-        return _errorRoute(settings, 'Route not found: ${settings.name}');
+        return null;
     }
   }
 

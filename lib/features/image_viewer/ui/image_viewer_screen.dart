@@ -5,9 +5,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../core/dependency_injection/dependency.dart';
 import '../../../core/domain/entities/profile_image.dart';
 import '../../../core/routing/routes.dart';
+import '../../../core/services/permission_service.dart';
 import '../../../core/utils/app_string.dart';
 import '../../../core/utils/colors_manager.dart';
 import '../../../core/utils/styles/app_text_style.dart';
+import '../../../core/widgets/permission_dialog.dart';
 import '../../../core/widgets/save_button.dart';
 import '../../../core/widgets/shimmer_widget.dart';
 import '../logic/image_save_cubit.dart';
@@ -135,7 +137,6 @@ class _ImageViewerScreenView extends StatelessWidget {
                 ),
               ),
 
-              // Top Gradient Overlay
               Positioned(
                 top: 0,
                 left: 0,
@@ -181,7 +182,6 @@ class _ImageViewerScreenView extends StatelessWidget {
         children: [
           SaveButton(
             onPressed: () {
-              // Already saved, show success
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text(AppStrings.imageSaved),
@@ -194,8 +194,9 @@ class _ImageViewerScreenView extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
           Text(
-            'Saved to gallery',
+            'Saved to: ${state.savedPath ?? 'Unknown location'}',
             style: AppTextStyle.bodySmall.copyWith(color: AppColors.success),
+            textAlign: TextAlign.center,
           ),
         ],
       );
@@ -204,13 +205,37 @@ class _ImageViewerScreenView extends StatelessWidget {
     if (state is ImageSaveError) {
       return Column(
         children: [
-          SaveButton(onPressed: () => _handleSaveImage(context)),
+          SaveButton(
+            onPressed: () => _handleSaveImage(context),
+            text: state.permissionResult != null
+                ? 'Request Permission'
+                : 'Retry',
+          ),
           SizedBox(height: 8.h),
           Text(
             state.message,
-            style: AppTextStyle.bodySmall.copyWith(color: AppColors.error),
+            style: AppTextStyle.bodySmall.copyWith(
+              color:
+                  state.permissionResult == PermissionResult.permanentlyDenied
+                  ? AppColors.warning
+                  : AppColors.error,
+            ),
             textAlign: TextAlign.center,
           ),
+          if (state.permissionResult == PermissionResult.permanentlyDenied) ...[
+            SizedBox(height: 8.h),
+            TextButton(
+              onPressed: () =>
+                  _showPermissionDialog(context, state.permissionResult!),
+              child: Text(
+                'Open Settings',
+                style: AppTextStyle.bodySmall.copyWith(
+                  color: AppColors.primary,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+          ],
         ],
       );
     }
@@ -275,16 +300,44 @@ class _ImageViewerScreenView extends StatelessWidget {
   }
 
   void _handleSaveImage(BuildContext context) {
+    String filePath = imageUrl;
+    if (imageUrl.contains('/t/p/')) {
+      // Extract the path after the size parameter
+      final parts = imageUrl.split('/t/p/');
+      if (parts.length > 1) {
+        final pathParts = parts[1].split('/');
+        if (pathParts.length > 1) {
+          filePath = '/${pathParts.sublist(1).join('/')}';
+        }
+      }
+    }
+
     // Create a ProfileImage from the current image URL
     final profileImage = ProfileImage(
       aspectRatio: 1.0, // Default aspect ratio
       height: 1000, // Default height
-      filePath: imageUrl,
+      filePath: filePath,
       voteAverage: 0.0, // Default vote average
       voteCount: 0, // Default vote count
       width: 1000, // Default width
     );
 
     context.read<ImageSaveCubit>().saveImage(profileImage);
+  }
+
+  void _showPermissionDialog(
+    BuildContext context,
+    PermissionResult permissionResult,
+  ) {
+    showDialog<void>(
+      context: context,
+      builder: (context) => PermissionDialog(
+        permissionResult: permissionResult,
+        onRetry: () => _handleSaveImage(context),
+        onOpenSettings: () {
+          context.read<ImageSaveCubit>().openAppSettings();
+        },
+      ),
+    );
   }
 }
