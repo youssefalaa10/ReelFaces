@@ -2,10 +2,10 @@ import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
 
 import '../../../../core/db/db.dart';
+import '../../../../core/domain/entities/profile_image.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/network/network_constants.dart';
 import '../../../../core/network/network_service.dart';
-import '../../domain/entities/profile_image.dart';
 import '../../domain/repositories/image_repository.dart';
 
 class ImageRepositoryImpl implements ImageRepository {

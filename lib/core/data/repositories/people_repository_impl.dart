@@ -1,15 +1,15 @@
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
 
-import '../../../../core/db/db.dart';
-import '../../../../core/domain/entities/paginated.dart';
-import '../../../../core/errors/exceptions.dart';
-import '../../../../core/network/network_constants.dart';
-import '../../../../core/network/network_service.dart';
+import '../../db/db.dart';
+import '../../domain/entities/paginated.dart';
 import '../../domain/entities/person.dart';
 import '../../domain/entities/person_details.dart';
 import '../../domain/entities/profile_image.dart';
 import '../../domain/repositories/people_repository.dart';
+import '../../errors/exceptions.dart';
+import '../../network/network_constants.dart';
+import '../../network/network_service.dart';
 
 class PeopleRepositoryImpl implements PeopleRepository {
   PeopleRepositoryImpl({

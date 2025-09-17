@@ -1,7 +1,7 @@
 import '../../core/domain/entities/paginated.dart';
-import '../../features/person_details/domain/entities/person.dart';
-import '../../features/person_details/domain/entities/person_details.dart';
-import '../../features/person_details/domain/entities/profile_image.dart';
+import '../domain/entities/person.dart';
+import '../domain/entities/person_details.dart';
+import '../domain/entities/profile_image.dart';
 
 class JsonHelpers {
   /// Convert Person from JSON

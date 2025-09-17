@@ -1,5 +1,5 @@
 import 'package:hive/hive.dart';
-import '../../../features/person_details/domain/entities/person.dart';
+import '../../../core/domain/entities/person.dart';
 
 class PersonAdapter extends TypeAdapter<Person> {
   @override

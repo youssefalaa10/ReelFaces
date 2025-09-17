@@ -1,4 +1,4 @@
-import '../../../../core/domain/entities/paginated.dart';
+import '../entities/paginated.dart';
 import '../entities/person.dart';
 import '../entities/person_details.dart';
 import '../entities/profile_image.dart';

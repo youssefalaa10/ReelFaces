@@ -1,5 +1,5 @@
 import 'package:hive/hive.dart';
-import '../../../features/person_details/domain/entities/profile_image.dart';
+import '../../domain/entities/profile_image.dart';
 
 class ProfileImageAdapter extends TypeAdapter<ProfileImage> {
   @override
