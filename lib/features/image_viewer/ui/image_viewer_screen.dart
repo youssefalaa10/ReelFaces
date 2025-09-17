@@ -9,6 +9,7 @@ import '../../../core/utils/app_string.dart';
 import '../../../core/utils/colors_manager.dart';
 import '../../../core/utils/styles/app_text_style.dart';
 import '../../../core/widgets/save_button.dart';
+import '../../../core/widgets/shimmer_widget.dart';
 import '../logic/image_save_cubit.dart';
 import '../logic/image_save_state.dart';
 
@@ -46,20 +47,6 @@ class _ImageViewerScreenView extends StatelessWidget {
         ),
         backgroundColor: AppColors.black70,
         elevation: 0,
-        actions: [
-          IconButton(
-            onPressed: () {
-              // Share functionality will be implemented later
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Share functionality coming soon!'),
-                  backgroundColor: AppColors.primary,
-                ),
-              );
-            },
-            icon: const Icon(Icons.share, color: AppColors.white),
-          ),
-        ],
       ),
       body: BlocBuilder<ImageSaveCubit, ImageSaveState>(
         builder: (context, state) {
@@ -277,19 +264,12 @@ class _ImageViewerScreenView extends StatelessWidget {
       width: double.infinity,
       height: double.infinity,
       color: AppColors.black,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-            strokeWidth: 3,
-          ),
-          SizedBox(height: 16.h),
-          Text(
-            AppStrings.loading,
-            style: AppTextStyle.bodyLarge.copyWith(color: AppColors.white70),
-          ),
-        ],
+      child: Center(
+        child: ShimmerContainer(
+          width: 200.w,
+          height: 200.w,
+          borderRadius: BorderRadius.circular(16.r),
+        ),
       ),
     );
   }

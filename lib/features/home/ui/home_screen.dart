@@ -10,6 +10,7 @@ import '../../../core/utils/colors_manager.dart';
 import '../../../core/utils/styles/app_text_style.dart';
 import '../../../core/widgets/gradient_background.dart';
 import '../../../core/widgets/person_card.dart';
+import '../../../core/widgets/shimmer_widget.dart';
 import '../logic/popular_people_cubit.dart';
 import '../logic/popular_people_state.dart';
 
@@ -85,22 +86,22 @@ class _HomeScreenView extends StatelessWidget {
 
   Widget _buildContent(BuildContext context, PopularPeopleState state) {
     if (state is PopularPeopleLoading) {
-      return SliverFillRemaining(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-              ),
-              SizedBox(height: 16.h),
-              Text(
-                AppStrings.loading,
-                style: AppTextStyle.bodyLarge.copyWith(
-                  color: AppColors.white70,
-                ),
-              ),
-            ],
+      return SliverPadding(
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
+        sliver: SliverGrid(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            childAspectRatio: 0.55,
+            crossAxisSpacing: 12.w,
+            mainAxisSpacing: 12.h,
+          ),
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              return ShimmerContainer(
+                borderRadius: BorderRadius.circular(16.r),
+              );
+            },
+            childCount: 6, // Show 6 shimmer cards
           ),
         ),
       );
@@ -217,12 +218,9 @@ class _HomeScreenView extends StatelessWidget {
               } else if (state is PopularPeopleLoaded && !state.hasReachedMax) {
                 // Load more when reaching the end
                 context.read<PopularPeopleCubit>().loadMorePeople();
-                return const Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      AppColors.primary,
-                    ),
-                  ),
+                return ShimmerContainer(
+                  height: 200.h,
+                  borderRadius: BorderRadius.circular(16.r),
                 );
               }
               return null;

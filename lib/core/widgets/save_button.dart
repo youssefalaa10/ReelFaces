@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../utils/app_string.dart';
 import '../utils/colors_manager.dart';
 import '../utils/styles/app_text_style.dart';
+import 'shimmer_widget.dart';
 
 class SaveButton extends StatefulWidget {
   const SaveButton({
@@ -84,15 +85,10 @@ class _SaveButtonState extends State<SaveButton>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (widget.isLoading)
-                        SizedBox(
+                        ShimmerContainer(
                           width: 16.w,
                           height: 16.h,
-                          child: const CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              AppColors.white,
-                            ),
-                          ),
+                          borderRadius: BorderRadius.circular(8.r),
                         )
                       else
                         Icon(

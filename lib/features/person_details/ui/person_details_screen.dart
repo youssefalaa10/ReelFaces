@@ -12,6 +12,7 @@ import '../../../core/utils/colors_manager.dart';
 import '../../../core/utils/styles/app_text_style.dart';
 import '../../../core/widgets/gradient_background.dart';
 import '../../../core/widgets/image_tile.dart';
+import '../../../core/widgets/shimmer_widget.dart';
 import '../logic/person_details_cubit.dart';
 import '../logic/person_details_state.dart';
 import '../logic/person_images_cubit.dart';
@@ -59,20 +60,6 @@ class _PersonDetailsScreenView extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
           icon: const Icon(Icons.arrow_back),
         ),
-        actions: [
-          IconButton(
-            onPressed: () {
-              // Share functionality will be implemented later
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Share functionality coming soon!'),
-                  backgroundColor: AppColors.primary,
-                ),
-              );
-            },
-            icon: const Icon(Icons.share),
-          ),
-        ],
       ),
       body: GradientBackground(
         child: BlocBuilder<PersonDetailsCubit, PersonDetailsState>(
@@ -94,11 +81,7 @@ class _PersonDetailsScreenView extends StatelessWidget {
     PersonImagesState imagesState,
   ) {
     if (detailsState is PersonDetailsLoading) {
-      return const Center(
-        child: CircularProgressIndicator(
-          valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-        ),
-      );
+      return _buildShimmerContent();
     }
 
     if (detailsState is PersonDetailsError) {
@@ -139,11 +122,7 @@ class _PersonDetailsScreenView extends StatelessWidget {
       );
     }
 
-    return const Center(
-      child: CircularProgressIndicator(
-        valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-      ),
-    );
+    return _buildShimmerContent();
   }
 
   Widget _buildPersonDetails(
@@ -353,22 +332,7 @@ class _PersonDetailsScreenView extends StatelessWidget {
       return SliverToBoxAdapter(
         child: Padding(
           padding: EdgeInsets.all(16.w),
-          child: Center(
-            child: Column(
-              children: [
-                const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-                ),
-                SizedBox(height: 16.h),
-                Text(
-                  'Loading images...',
-                  style: AppTextStyle.bodyLarge.copyWith(
-                    color: AppColors.white70,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          child: _buildImagesShimmer(),
         ),
       );
     }
@@ -524,6 +488,75 @@ class _PersonDetailsScreenView extends StatelessWidget {
         'imageUrl': NetworkConfig.getProfileImageUrl(image.filePath),
         'imageTitle': 'Profile Image',
       },
+    );
+  }
+
+  Widget _buildShimmerContent() {
+    return CustomScrollView(
+      slivers: [
+        // Header shimmer
+        SliverToBoxAdapter(
+          child: Container(
+            height: 400.h,
+            padding: EdgeInsets.all(16.w),
+            child: Column(
+              children: [
+                // Profile image shimmer
+                ShimmerContainer(
+                  width: 200.w,
+                  height: 200.w,
+                  borderRadius: BorderRadius.circular(100.w),
+                ),
+                SizedBox(height: 24.h),
+                // Name shimmer
+                ShimmerContainer(
+                  width: 250.w,
+                  height: 24.h,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                SizedBox(height: 16.h),
+                // Bio shimmer
+                ShimmerContainer(
+                  width: double.infinity,
+                  height: 16.h,
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                SizedBox(height: 8.h),
+                ShimmerContainer(
+                  width: 300.w,
+                  height: 16.h,
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+              ],
+            ),
+          ),
+        ),
+        // Info shimmer
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.all(16.w),
+            child: Column(
+              children: List.generate(4, (index) => const ShimmerListTile()),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildImagesShimmer() {
+    return Column(
+      children: [
+        // Title shimmer
+        ShimmerContainer(
+          width: 150.w,
+          height: 20.h,
+          borderRadius: BorderRadius.circular(10.r),
+        ),
+        SizedBox(height: 16.h),
+        // Grid shimmer
+        const ShimmerGrid(itemCount: 6),
+      ],
     );
   }
 }
